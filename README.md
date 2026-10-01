@@ -10,6 +10,29 @@ npm install
 npm run dev
 ```
 
+## Oyun içinden
+
+![Altın saatte çölde drift: toz, iz ve HUD](docs/images/01-desert.jpg)
+
+*Çöl çeyreğinde altın saat. El freniyle savrulan araç arkasında iz ve toz
+bırakıyor; sağ alttaki mini-harita aynı izleri gösteriyor.*
+
+![Kumda bırakılan lastik izleri, yukarıdan](docs/images/02-tracks.jpg)
+
+*İzler bir doku değil, gerçek yer değiştirme: oyuk, kenara savrulan kum ve diş
+deseni. Sekiz çizen bir rota, kayaların çevresinden dolanıyor.*
+
+![Karlı bölge](docs/images/03-snow.jpg)
+
+*Kar bölgesi: tutuş belirgin şekilde düşük, iz mavimsi ve derin. Ufukta çöl
+çeyreği görünüyor — dört bölge sınırlarda gürültüyle birbirine karışıyor.*
+
+![Harita editörü](docs/images/04-editor.jpg)
+
+*Harita editörü (`M`). Burada çayır bölgesinde fırçayla yükseltilmiş üç tepe
+var; mavi halka fırçanın araziye oturan izi.*
+
+
 ## Kontroller
 
 | Tuş | İşlev |

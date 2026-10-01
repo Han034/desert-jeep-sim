@@ -520,6 +520,10 @@ async function boot() {
     const state = vehicle.state;
     _forward.set(0, 0, -1).applyQuaternion(state.quaternion);
 
+    // Püskürtme ve toz, aracın bastığı zeminin rengini alsın: kar üstünde
+    // kahverengi kum savrulması en çok göze batan tutarsızlıktı.
+    particles.setGroundBiome(heightfield.sampleBiome(state.position.x, state.position.z));
+
     for (const w of vehicle.wheels) {
       if (!w.grounded) continue;
       // Püskürtme miktarı yükle ölçeklenir: hafiflemiş tekerlek kum atmaz.

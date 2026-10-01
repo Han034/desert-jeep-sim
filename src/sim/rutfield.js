@@ -129,7 +129,22 @@ export class Rutfield {
     }
   }
 
-  /** Mini-harita için ızgarayı bir ImageData'ya döker. */
+  /**
+   * Mini-harita için ızgarayı bir ImageData'ya döker.
+   *
+   * İndirgeme **maksimum** ile yapılıyor, nokta örneklemeyle değil. 1024'lük
+   * ızgarayı 152 piksele indirirken her yedi satır ve sütundan altısı atlanıyor;
+   * bir lastik izi ise ızgarada 1-2 hücre genişliğinde. Nokta örneklemede izin
+   * bir çıktı pikseline denk gelme ihtimali düşük kalıyor ve "izler" yazan
+   * mini-harita uzun bir sürüşten sonra bile boş görünüyordu.
+   *
+   * Ortalama da işe yaramazdı: 45 hücrenin 2'si doluyken ortalama, izi
+   * görünmez bir tona indirir. İnce bir maskenin doğru indirgemesi maksimum.
+   *
+   * Döngü çıktıdan değil **kaynaktan** sürülüyor: hücrelerin ezici çoğunluğu
+   * sıfır olduğu için tek bir tarama, çıktı pikseli başına blok taramaktan
+   * belirgin şekilde ucuz.
+   */
   writeToImageData(imageData, color = [255, 176, 92]) {
     const out = imageData.data;
     const outW = imageData.width;
@@ -137,16 +152,25 @@ export class Rutfield {
     const res = this.res;
     const d = this.data;
 
-    for (let y = 0; y < outH; y++) {
-      const sj = Math.min(res - 1, ((y / outH) * res) | 0);
-      for (let x = 0; x < outW; x++) {
-        const si = Math.min(res - 1, ((x / outW) * res) | 0);
-        const v = d[sj * res + si];
-        const o = (y * outW + x) * 4;
-        out[o] = color[0];
-        out[o + 1] = color[1];
-        out[o + 2] = color[2];
-        out[o + 3] = v;
+    for (let i = 0, o = 0; i < outW * outH; i++, o += 4) {
+      out[o] = color[0];
+      out[o + 1] = color[1];
+      out[o + 2] = color[2];
+      out[o + 3] = 0;
+    }
+
+    const sx = outW / res;
+    const sy = outH / res;
+    for (let sj = 0; sj < res; sj++) {
+      const row = sj * res;
+      const y = (sj * sy) | 0;
+      const outRow = (y < outH ? y : outH - 1) * outW;
+      for (let si = 0; si < res; si++) {
+        const v = d[row + si];
+        if (v === 0) continue;
+        const x = (si * sx) | 0;
+        const o = (outRow + (x < outW ? x : outW - 1)) * 4 + 3;
+        if (v > out[o]) out[o] = v;
       }
     }
   }

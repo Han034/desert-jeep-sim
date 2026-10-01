@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { BIOME_LIST } from '../config/biomes.js';
 import { mulberry32, clamp01, lerp } from '../utils/math.js';
 
 /**
@@ -14,6 +15,10 @@ import { mulberry32, clamp01, lerp } from '../utils/math.js';
 const TYPE_SPRAY = 0;
 const TYPE_DUST = 1;
 const TYPE_WIND = 2;
+
+const _sandMix = new THREE.Color();
+const _dustMix = new THREE.Color();
+const _tmpColor = new THREE.Color();
 
 export function createParticles({ scene, quality, weather }) {
   // Havuz geniş: ince toz, az sayıda iri kabarcık yerine çok sayıda küçük ve
@@ -313,6 +318,29 @@ export function createParticles({ scene, quality, weather }) {
     geometry.attributes.aParams.needsUpdate = true;
   }
 
+  /**
+   * Püskürtme ve tozun rengini, aracın o an bastığı zeminden alır.
+   *
+   * Renk parçacık başına değil tek bir uniform olarak taşınıyor; bütün
+   * püskürtme zaten tekerlek temas noktalarından doğduğu için araç konumundan
+   * alınan tek örnek yeterli. Olmadığında kar üstünde kahverengi bir leke
+   * savruluyordu — beyaz zeminde en çok göze batan hata.
+   */
+  function setGroundBiome(weights) {
+    _sandMix.setRGB(0, 0, 0);
+    _dustMix.setRGB(0, 0, 0);
+    for (let i = 0; i < 4; i++) {
+      const w = weights[i];
+      if (w <= 0) continue;
+      const ground = BIOME_LIST[i].ground;
+      _sandMix.add(_tmpColor.setHex(ground.colorA).multiplyScalar(w));
+      _dustMix.add(_tmpColor.setHex(ground.colorB).multiplyScalar(w));
+    }
+    material.uniforms.uSandColor.value.copy(_sandMix);
+    // Havada asılı toz, yerdeki koyu tondan daha açık: zerreler ışığı saçıyor.
+    material.uniforms.uDustColor.value.copy(_dustMix).lerp(_sandMix, 0.6);
+  }
+
   return {
     points,
     material,
@@ -321,6 +349,7 @@ export function createParticles({ scene, quality, weather }) {
     emitDust,
     emitImpact,
     emitWindSand,
+    setGroundBiome,
     setEmissionScale(value) {
       emission = value;
     },
